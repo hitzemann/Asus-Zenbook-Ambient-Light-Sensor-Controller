@@ -214,6 +214,9 @@ int getAmbientLightPercent() {
     strals[count] = '\0';
     close(fd);
 
+    // XXX: According to ACPI specs _ALI's unit should be lux aka lumen/m^2 (1-dark room, 10 dim conference room, 300-400 office, 1000 overcast day, 10000 bright day)
+    // XXX: http://www.acpi.info/DOWNLOADS/ACPI_5_Errata%20A.pdf page 467+
+    // XXX: My device returns values up to 25000, 0 means too dark to measure, -1 means too bright to measure
     // 0x32 (min illuminance), 0xC8, 0x190, 0x258, 0x320 (max illuminance).
     int als = atoi(strals);
     //printf("\"%s\"\n", strals);
@@ -221,22 +224,10 @@ int getAmbientLightPercent() {
 
     float percent = 0;
 
-    switch(als) {
-    case 0x32:
-        percent = 10;
-        break;
-    case 0xC8:
-        percent = 25;
-        break;
-    case 0x190:
-        percent = 50;
-        break;
-    case 0x258:
-        percent = 75;
-        break;
-    case 0x320:
-        percent = 100;
-        break;
+    if (als < 1000 && als >=0) {
+	    percent = int((als*100/1000)+0.5);
+    } else {
+	    percent = 100;
     }
 
     return percent;

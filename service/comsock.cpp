@@ -39,18 +39,18 @@ static ssize_t readAllChars(int fd, void *buf, size_t count);
 int createServerChannel(char* path) {
   int fd, tmp_errno = 0;
   
-  if(strlen(path) > UNIX_PATH_MAX) {
+  if (strlen(path) > UNIX_PATH_MAX) {
     errno = E2BIG;
     return -1;
   }
   
-  if(strcmp(path, "") == 0 || access(path, F_OK) == 0) {
+  if (strcmp(path, "") == 0 || access(path, F_OK) == 0) {
     errno = EEXIST;
     return -1;
   }
   
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if(fd == -1) {
+  if (fd == -1) {
     return -1;
   } else {
     struct sockaddr_un addr;
@@ -59,9 +59,9 @@ int createServerChannel(char* path) {
     strncpy(addr.sun_path, path, UNIX_PATH_MAX);
     addr.sun_family = AF_UNIX;
     bind_val = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
-    if(bind_val == 0) {
+    if (bind_val == 0) {
     
-      if(listen(fd, SOMAXCONN) == 0) {
+      if (listen(fd, SOMAXCONN) == 0) {
         return fd;
       } else {
         tmp_errno = errno;
@@ -85,8 +85,8 @@ int createServerChannel(char* path) {
   - uno dei valori assegnati da remove()
  */
 int closeServerChannel(char* path, int s) {
-  if(close(s) == 0) {
-    if(remove(path) == 0) {
+  if (close(s) == 0) {
+    if (remove(path) == 0) {
       return 0;
     } else {
       return -1;
@@ -102,7 +102,7 @@ int closeServerChannel(char* path, int s) {
  */
 int acceptConnection(int s) {
   int fd = accept(s, NULL, 0);
-  if(fd >= 0) {
+  if (fd >= 0) {
     return fd;
   } else {
     return -1;
@@ -124,36 +124,36 @@ int receiveMessage(int sc, message_t * msg) {
   int r_type = 0, r_cbuflen = 0, r_buffer = 0;
 
   r_type = readAllChars(sc, &type, 1);
-  if(r_type <= 0) {
+  if (r_type <= 0) {
     errno = (r_type == 0 ? ENOTCONN : errno);
     return -1;
   }
   
   cbuflen[10] = '\0';
   r_cbuflen = readAllChars(sc, cbuflen, 10);
-  if(r_cbuflen <= 0) {
+  if (r_cbuflen <= 0) {
     errno = (r_cbuflen == 0 ? ENOTCONN : errno);
     return -1;
   }
   
   errno = 0;
   buflen = (int) strtoul(cbuflen, NULL, 10);
-  if(errno != 0) return -1;
+  if (errno != 0) return -1;
   
-  if(buflen > 0) {
+  if (buflen > 0) {
     /* FIXME Potenzialmente pericoloso! Potremmo allocare una quantità di memoria esagerata */
     buffer = (char*)malloc(sizeof(char) * buflen);
-    if(buffer == NULL) return -1;
+    if (buffer == NULL) return -1;
     r_buffer = readAllChars(sc, buffer, buflen);
-    if(r_buffer <= 0) {
+    if (r_buffer <= 0) {
       errno = (r_buffer == 0 ? ENOTCONN : errno);
       free(buffer);
       return -1;
     }
   }
   
-  if(msg == NULL) { /* se msg=null, riceve e scarta */
-    if(buffer != NULL) {
+  if (msg == NULL) { /* se msg=null, riceve e scarta */
+    if (buffer != NULL) {
       free(buffer);
     }
   } else {
@@ -179,20 +179,20 @@ int sendMessage(int sc, message_t *msg) {
   int out_size;
   int written;
   
-  if(msg != NULL) {
+  if (msg != NULL) {
   
     out_size = 1 + 10 + msg->length + 1;
     out = (char*)calloc(out_size, sizeof(char));
-    if(out == NULL) return -1;
+    if (out == NULL) return -1;
     
     out[0] = msg->type;
-    if(snprintf(out+1, 10+1, "%010d", msg->length) < 0) {
+    if (snprintf(out+1, 10+1, "%010d", msg->length) < 0) {
       free(out);
       return -1;
     }
     
-    if(msg->length > 0) {
-      if(msg->buffer != NULL) {
+    if (msg->length > 0) {
+      if (msg->buffer != NULL) {
         strncat(out, msg->buffer, msg->length);
       } else {
         free(out);
@@ -206,7 +206,7 @@ int sendMessage(int sc, message_t *msg) {
        (terminerebbe il processo in caso di connessione interrotta...) */
     written = send(sc, out, out_size-1, MSG_NOSIGNAL);
     free(out);
-    if(written == -1 && errno == EPIPE) {
+    if (written == -1 && errno == EPIPE) {
       errno = ENOTCONN;
     }
     return written;
@@ -227,23 +227,23 @@ int sendMessage(int sc, message_t *msg) {
 int openConnection(char* path, int ntrial, int k) {
   int fd;
 
-  if(ntrial < 0 || ntrial > MAXTRIAL) {
+  if (ntrial < 0 || ntrial > MAXTRIAL) {
     errno = EINVAL;
     return -1;
   }
   
-  if(k < 0 || k > MAXSEC) {
+  if (k < 0 || k > MAXSEC) {
     errno = EINVAL;
     return -1;
   }
   
-  if(strlen(path) > UNIX_PATH_MAX) {
+  if (strlen(path) > UNIX_PATH_MAX) {
     errno = E2BIG;
     return -1;
   }
   
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if(fd == -1) {
+  if (fd == -1) {
     return -1;
   } else {
   
@@ -253,7 +253,7 @@ int openConnection(char* path, int ntrial, int k) {
     strncpy(addr.sun_path, path, UNIX_PATH_MAX);
     addr.sun_family = AF_UNIX;
     
-    if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
+    if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
     
       /* ok, ha funzionato al primo tentativo */
       return fd;
@@ -263,7 +263,7 @@ int openConnection(char* path, int ntrial, int k) {
       /* in caso di errore, ritenta */
       for(i = 0; i < ntrial; i++) {
         sleep(k);
-        if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
+        if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
           return fd;
         } else {
           connect_errno = errno;
@@ -285,7 +285,7 @@ int openConnection(char* path, int ntrial, int k) {
   - uno dei valori assegnati da close()
  */
 int closeConnection(int s) {
-  if(close(s) == 0) {
+  if (close(s) == 0) {
     return 0;
   } else {
     return -1;
@@ -302,7 +302,7 @@ ssize_t readAllChars(int fd, void *buf, size_t count) {
   
   while(totpart < (ssize_t)count) {
     curpart = read(fd, cbuf+totpart, count-totpart);
-    if(curpart <= 0) {
+    if (curpart <= 0) {
       return curpart;
     }
     
@@ -313,10 +313,10 @@ ssize_t readAllChars(int fd, void *buf, size_t count) {
 }
 
 void freeMessage(message_t *msg, int onHeap) {
-  if(msg->buffer != NULL) {
+  if (msg->buffer != NULL) {
     free(msg->buffer);
   }
-  if(onHeap) {
+  if (onHeap) {
     free(msg);
   }
 }

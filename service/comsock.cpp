@@ -60,7 +60,6 @@ int createServerChannel(char* path) {
     addr.sun_family = AF_UNIX;
     bind_val = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
     if (bind_val == 0) {
-
       if (listen(fd, SOMAXCONN) == 0) {
         return fd;
       } else {
@@ -69,7 +68,6 @@ int createServerChannel(char* path) {
         errno = tmp_errno;
         return -1;
       }
-
     } else {
       tmp_errno = errno;
       closeServerChannel(path, fd);
@@ -180,7 +178,6 @@ int sendMessage(int sc, message_t *msg) {
   int written;
 
   if (msg != NULL) {
-
     out_size = 1 + 10 + msg->length + 1;
     out = (char*)calloc(out_size, sizeof(char));
     if (out == NULL) return -1;
@@ -210,7 +207,6 @@ int sendMessage(int sc, message_t *msg) {
       errno = ENOTCONN;
     }
     return written;
-
   } else {
     errno = EINVAL;
     return -1;
@@ -246,7 +242,6 @@ int openConnection(char* path, int ntrial, int k) {
   if (fd == -1) {
     return -1;
   } else {
-
     struct sockaddr_un addr;
     int i, connect_errno = 0;
 
@@ -254,14 +249,11 @@ int openConnection(char* path, int ntrial, int k) {
     addr.sun_family = AF_UNIX;
 
     if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
-
       /* ok, ha funzionato al primo tentativo */
       return fd;
-
     } else {
-
       /* in caso di errore, ritenta */
-      for(i = 0; i < ntrial; i++) {
+      for (i = 0; i < ntrial; i++) {
         sleep(k);
         if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
           return fd;
@@ -269,14 +261,11 @@ int openConnection(char* path, int ntrial, int k) {
           connect_errno = errno;
         }
       }
-
     }
-
     /* Sono terminati i tentativi a disposizione. */
     closeConnection(fd);
     errno = connect_errno;
     return -1;
-
   }
 }
 
@@ -300,7 +289,7 @@ ssize_t readAllChars(int fd, void *buf, size_t count) {
   ssize_t curpart, totpart = 0;
   char *cbuf = (char*)buf;
 
-  while(totpart < (ssize_t)count) {
+  while (totpart < (ssize_t)count) {
     curpart = read(fd, cbuf+totpart, count-totpart);
     if (curpart <= 0) {
       return curpart;

@@ -29,13 +29,13 @@ Client::Client(int argc, char *argv[], string socketPath)
     disable = false;
     status = false;
 
-    if(argc >= 2) {
+    if (argc >= 2) {
         string arg1(argv[1]);
-        if(arg1 == "-e") {
+        if (arg1 == "-e") {
             enable = true;
-        } else if(arg1 == "-d") {
+        } else if (arg1 == "-d") {
             disable = true;
-        } else if(arg1 == "-s") {
+        } else if (arg1 == "-s") {
             status = true;
         }
     }
@@ -43,7 +43,7 @@ Client::Client(int argc, char *argv[], string socketPath)
 
 void Client::Run()
 {
-    if(enable) {
+    if (enable) {
         int g_serverFd = connectOrExit();
 
         int sent;
@@ -54,7 +54,7 @@ void Client::Run()
         msg.length = 0;
 
         sent = sendMessage(g_serverFd, &msg);
-        if(sent == -1) {
+        if (sent == -1) {
           perror("Error");
           closeConnection(g_serverFd);
           exit(EXIT_FAILURE);
@@ -62,7 +62,7 @@ void Client::Run()
 
         closeConnection(g_serverFd);
 
-    } else if(disable) {
+    } else if (disable) {
         int g_serverFd = connectOrExit();
 
         int sent;
@@ -73,7 +73,7 @@ void Client::Run()
         msg.length = 0;
 
         sent = sendMessage(g_serverFd, &msg);
-        if(sent == -1) {
+        if (sent == -1) {
           perror("Error");
           closeConnection(g_serverFd);
           exit(EXIT_FAILURE);
@@ -81,7 +81,7 @@ void Client::Run()
 
         closeConnection(g_serverFd);
 
-    } else if(status) {
+    } else if (status) {
         int g_serverFd = connectOrExit();
 
         int sent;
@@ -92,21 +92,21 @@ void Client::Run()
         msg.length = 0;
 
         sent = sendMessage(g_serverFd, &msg);
-        if(sent == -1) {
+        if (sent == -1) {
           perror("Error");
           closeConnection(g_serverFd);
           exit(EXIT_FAILURE);
         }
 
-        if(receiveMessage(g_serverFd, &msg) == -1) {
+        if (receiveMessage(g_serverFd, &msg) == -1) {
             perror("Error");
             closeConnection(g_serverFd);
             exit(EXIT_FAILURE);
         }
 
-        if(msg.type == MSG_ENABLED)
+        if (msg.type == MSG_ENABLED)
             printf("1\n");
-        else if(msg.type == MSG_DISABLED)
+        else if (msg.type == MSG_DISABLED)
             printf("0\n");
         else {
             perror("Error");
@@ -120,7 +120,7 @@ void Client::Run()
 
 int Client::connectOrExit() {
     int g_serverFd = openConnection((char*)this->socketPath.c_str(), NTRIAL, NSEC);
-    if(g_serverFd == -1) {
+    if (g_serverFd == -1) {
       perror("No connection to the server.");
       exit(EXIT_FAILURE);
     }

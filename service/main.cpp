@@ -26,7 +26,6 @@
 #include <errno.h>
 #include "comsock.h"
 #include "client.h"
-#include <errno.h>
 #include <err.h>
 #include <bsd/libutil.h>
 

@@ -140,6 +140,25 @@ int getScreenBacklightMax()
     return value;
 }
 
+int getScreenBacklightCur()
+{
+    string path = getScreenBacklightDevicePath() + "brightness";
+
+    int fd = open(path.c_str(), O_RDONLY);
+    if(fd == -1) {
+        syslog(LOG_ERR, "Error opening %s", path.c_str());
+        return 0;
+    }
+    
+    char str[100];
+    int count = read(fd, str, sizeof(str));
+    if (count == -1) return 0;
+    str[count] = '\0';
+    close(fd);
+    int value = atoi(str);
+    return value;
+}
+
 void setScreenBacklight(int percent) {
     int ret = 0;
     char cmd[100];

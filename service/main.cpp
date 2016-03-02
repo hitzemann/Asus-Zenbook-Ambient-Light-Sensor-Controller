@@ -161,18 +161,28 @@ int getScreenBacklightCur()
 
 void setScreenBacklight(int percent) {
     int ret = 0;
+    int time = 200; // ms
+    int fades = 25; // steps to use for fading
     char cmd[100];
     int maxScreenBacklight = getScreenBacklightMax(); // could be static if we are sure if it will not be changed at program lifetime
     if (!maxScreenBacklight) {
         syslog(LOG_ERR, "Failed to get max screen backlight.");
         return;
     }
+    int curScreenBacklight = getScreenBacklightCur();
+    int newScreenBacklight = maxScreenBacklight*percent/100;
+    int step = (newScreenBacklight - curScreenBacklight) / fades;
+    int val = curScreenBacklight;
 
     string path = getScreenBacklightDevicePath() + "brightness";
-    snprintf(cmd, sizeof(cmd), "echo %d | tee %s", maxScreenBacklight * percent / 100, path.c_str());
-    ret = system(cmd);
-    if (ret < 0) {
-        syslog(LOG_ERR, "Failed to set screen backlight.");
+    for (int i=0; i<fades; i++) {
+	val += step;
+        snprintf(cmd, sizeof(cmd), "echo %d | tee %s", val, path.c_str());
+        ret = system(cmd);
+        if (ret < 0) {
+            syslog(LOG_ERR, "Failed to set screen backlight.");
+        }
+	usleep(time*1000/fades);
     }
 }
 

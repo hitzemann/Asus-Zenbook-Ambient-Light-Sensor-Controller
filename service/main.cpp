@@ -24,10 +24,10 @@
 #include <pthread.h>
 #include <syslog.h>
 #include <errno.h>
-#include "comsock.h"
-#include "client.h"
 #include <err.h>
 #include <bsd/libutil.h>
+#include "comsock.h"
+#include "client.h"
 
 using namespace std;
 

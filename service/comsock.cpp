@@ -38,29 +38,29 @@ static ssize_t readAllChars(int fd, void *buf, size_t count);
  */
 int createServerChannel(char* path) {
   int fd, tmp_errno = 0;
-  
+
   if (strlen(path) > UNIX_PATH_MAX) {
     errno = E2BIG;
     return -1;
   }
-  
+
   if (strcmp(path, "") == 0 || access(path, F_OK) == 0) {
     errno = EEXIST;
     return -1;
   }
-  
+
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (fd == -1) {
     return -1;
   } else {
     struct sockaddr_un addr;
     int bind_val;
-    
+
     strncpy(addr.sun_path, path, UNIX_PATH_MAX);
     addr.sun_family = AF_UNIX;
     bind_val = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
     if (bind_val == 0) {
-    
+
       if (listen(fd, SOMAXCONN) == 0) {
         return fd;
       } else {
@@ -69,7 +69,7 @@ int createServerChannel(char* path) {
         errno = tmp_errno;
         return -1;
       }
-      
+
     } else {
       tmp_errno = errno;
       closeServerChannel(path, fd);
@@ -128,18 +128,18 @@ int receiveMessage(int sc, message_t * msg) {
     errno = (r_type == 0 ? ENOTCONN : errno);
     return -1;
   }
-  
+
   cbuflen[10] = '\0';
   r_cbuflen = readAllChars(sc, cbuflen, 10);
   if (r_cbuflen <= 0) {
     errno = (r_cbuflen == 0 ? ENOTCONN : errno);
     return -1;
   }
-  
+
   errno = 0;
   buflen = (int) strtoul(cbuflen, NULL, 10);
   if (errno != 0) return -1;
-  
+
   if (buflen > 0) {
     /* FIXME Potenzialmente pericoloso! Potremmo allocare una quantità di memoria esagerata */
     buffer = (char*)malloc(sizeof(char) * buflen);
@@ -151,7 +151,7 @@ int receiveMessage(int sc, message_t * msg) {
       return -1;
     }
   }
-  
+
   if (msg == NULL) { /* se msg=null, riceve e scarta */
     if (buffer != NULL) {
       free(buffer);
@@ -161,7 +161,7 @@ int receiveMessage(int sc, message_t * msg) {
     msg->length = buflen;
     msg->buffer = buffer;
   }
-  
+
   return r_type + r_cbuflen + r_buffer;
 }
 
@@ -178,19 +178,19 @@ int sendMessage(int sc, message_t *msg) {
   char *out;
   int out_size;
   int written;
-  
+
   if (msg != NULL) {
-  
+
     out_size = 1 + 10 + msg->length + 1;
     out = (char*)calloc(out_size, sizeof(char));
     if (out == NULL) return -1;
-    
+
     out[0] = msg->type;
     if (snprintf(out+1, 10+1, "%010d", msg->length) < 0) {
       free(out);
       return -1;
     }
-    
+
     if (msg->length > 0) {
       if (msg->buffer != NULL) {
         strncat(out, msg->buffer, msg->length);
@@ -210,7 +210,7 @@ int sendMessage(int sc, message_t *msg) {
       errno = ENOTCONN;
     }
     return written;
-  
+
   } else {
     errno = EINVAL;
     return -1;
@@ -231,35 +231,35 @@ int openConnection(char* path, int ntrial, int k) {
     errno = EINVAL;
     return -1;
   }
-  
+
   if (k < 0 || k > MAXSEC) {
     errno = EINVAL;
     return -1;
   }
-  
+
   if (strlen(path) > UNIX_PATH_MAX) {
     errno = E2BIG;
     return -1;
   }
-  
+
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (fd == -1) {
     return -1;
   } else {
-  
+
     struct sockaddr_un addr;
     int i, connect_errno = 0;
-    
+
     strncpy(addr.sun_path, path, UNIX_PATH_MAX);
     addr.sun_family = AF_UNIX;
-    
+
     if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
-    
+
       /* ok, ha funzionato al primo tentativo */
       return fd;
-      
+
     } else {
-    
+
       /* in caso di errore, ritenta */
       for(i = 0; i < ntrial; i++) {
         sleep(k);
@@ -269,14 +269,14 @@ int openConnection(char* path, int ntrial, int k) {
           connect_errno = errno;
         }
       }
-    
+
     }
-    
+
     /* Sono terminati i tentativi a disposizione. */
     closeConnection(fd);
     errno = connect_errno;
     return -1;
-    
+
   }
 }
 
@@ -299,16 +299,16 @@ int closeConnection(int s) {
 ssize_t readAllChars(int fd, void *buf, size_t count) {
   ssize_t curpart, totpart = 0;
   char *cbuf = (char*)buf;
-  
+
   while(totpart < (ssize_t)count) {
     curpart = read(fd, cbuf+totpart, count-totpart);
     if (curpart <= 0) {
       return curpart;
     }
-    
+
     totpart += curpart;
   }
-  
+
   return totpart;
 }
 

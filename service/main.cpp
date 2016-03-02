@@ -233,6 +233,22 @@ int getAmbientLightPercent() {
     return percent;
 }
 
+int getAmbientLightLux() {
+    int fd = open("/sys/bus/acpi/devices/ACPI0008:00/ali", O_RDONLY);
+    if(fd == -1) {
+        logServerExit(EXIT_FAILURE, LOG_CRIT, "Error opening /sys/bus/acpi/devices/ACPI0008:00/ali");
+    }
+    char strals[100];
+    int count = read(fd, strals, 100);
+    if (count == -1) {
+        logServerExit(EXIT_FAILURE, LOG_CRIT, "Error reading /sys/bus/acpi/devices/ACPI0008:00/ali");
+    }
+    strals[count] = '\0';
+    close(fd);
+    int als = atoi(strals);
+    return als;
+}
+
 int main(int argc, char *argv[])
 {
     if(argc > 1) {
@@ -306,10 +322,11 @@ void startDaemon()
         }
         pthread_mutex_unlock(&mtx);
 
+
         if(getLidStatus() == 0) {
             setKeyboardBacklight(0);
         } else {
-
+		/*
             float als = getAmbientLightPercent();
             //printf("Illuminance percent: %f\n", als);
 
@@ -329,6 +346,47 @@ void startDaemon()
                 setScreenBacklight(100);
                 setKeyboardBacklight(0);
             }
+	    */
+            // [root@hisi ~]# echo "\_SB.ALS._ALR" > /proc/acpi/call
+            // [root@hisi ~]# cat /proc/acpi/call
+            // [[0x14, 0x0], [0x14, 0x19], [0x28, 0x32], [0x32, 0x64], [0x41, 0x96], [0x50, 0xc8], [0x64, 0x12c], [0x7d, 0x190], [0x9b, 0x1f4], [0xc3, 0x258], [0xf0, 0x2bc], [0x127, 0x320], [0x168, 0x384], [0x1b8, 0x3e8], [0x217, 0x4e2], [0x294, 0x5dc]]
+	    // ACPI defines the tuples as (brightness in % relative to baseline at 300 lux, brightness in lux)
+	    // However my _ALR values go far above 150% for relative brightness. I assume it might be the raw brightness value for the intel_backlight device
+            int lux = getAmbientLightLux();
+	    int percent = 100;
+
+	    if (lux < 25) {
+		    percent = 2;
+	    } else if (lux < 50) {
+		    percent = 4;
+	    } else if (lux < 100) {
+		    percent = 5;
+	    } else if (lux < 150) {
+		    percent = 6;
+	    } else if (lux < 200) {
+		    percent = 8;
+	    } else if (lux < 300) {
+		    percent = 10;
+	    } else if (lux < 400) {
+		    percent = 13;
+	    } else if (lux < 500) {
+		    percent = 16;
+	    } else if (lux < 600) {
+		    percent = 20;
+	    } else if (lux < 700) {
+		    percent = 25;
+	    } else if (lux < 800) {
+		    percent = 31;
+	    } else if (lux < 900) {
+		    percent = 38;
+	    } else if (lux < 1000) {
+		    percent = 46;
+	    } else if (lux < 1250) {
+		    percent = 57;
+	    } else if (lux < 1500) {
+		    percent = 70;
+	    }
+	    setScreenBacklight(percent);
         }
 
         sleep(3);

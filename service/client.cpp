@@ -104,9 +104,9 @@ void Client::Run() {
 
         if (msg.type == MSG_ENABLED) {
             printf("1\n");
-	} else if (msg.type == MSG_DISABLED) {
+        } else if (msg.type == MSG_DISABLED) {
             printf("0\n");
-	} else {
+        } else {
             perror("Error");
             closeConnection(g_serverFd);
             exit(EXIT_FAILURE);

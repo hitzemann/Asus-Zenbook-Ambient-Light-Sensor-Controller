@@ -21,8 +21,7 @@
 
 using namespace std;
 
-Client::Client(int argc, char *argv[], string socketPath)
-{
+Client::Client(int argc, char *argv[], string socketPath) {
     this->socketPath = socketPath;
 
     enable = false;
@@ -41,8 +40,7 @@ Client::Client(int argc, char *argv[], string socketPath)
     }
 }
 
-void Client::Run()
-{
+void Client::Run() {
     if (enable) {
         int g_serverFd = connectOrExit();
 

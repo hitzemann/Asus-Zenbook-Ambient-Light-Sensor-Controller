@@ -5,6 +5,8 @@ Tested with:
 ------------
  * UX305FA
    * Linux 4.4.1
+   * Linux 4.4.2
+   * Linux 4.4.3
 
 How to install
 --------------

@@ -159,12 +159,13 @@ int getScreenBacklightCur()
     return value;
 }
 
-void setScreenBacklight(int percent) {
+void setScreenBacklight(int percent, int max, string path) {
     int ret = 0;
     int time = 200; // ms
     int fades = 25; // steps to use for fading
     char cmd[100];
-    int maxScreenBacklight = getScreenBacklightMax(); // could be static if we are sure if it will not be changed at program lifetime
+    //int maxScreenBacklight = getScreenBacklightMax(); // could be static if we are sure if it will not be changed at program lifetime
+    int maxScreenBacklight = max; // could be static if we are sure if it will not be changed at program lifetime
     if (!maxScreenBacklight) {
         syslog(LOG_ERR, "Failed to get max screen backlight.");
         return;
@@ -174,10 +175,11 @@ void setScreenBacklight(int percent) {
     int step = (newScreenBacklight - curScreenBacklight) / fades;
     int val = curScreenBacklight;
 
-    string path = getScreenBacklightDevicePath() + "brightness";
+    //string path = getScreenBacklightDevicePath() + "brightness";
+    string fullpath = path + "brightness";
     for (int i=0; i<fades; i++) {
 	val += step;
-        snprintf(cmd, sizeof(cmd), "echo %d | tee %s", val, path.c_str());
+        snprintf(cmd, sizeof(cmd), "echo %d | tee %s", val, fullpath.c_str());
         ret = system(cmd);
         if (ret < 0) {
             syslog(LOG_ERR, "Failed to set screen backlight.");
@@ -342,6 +344,8 @@ void startDaemon()
         syslog(LOG_CRIT, "Cannot create thread");
         exit(EXIT_FAILURE);
     }
+    int mymax = getScreenBacklightMax();
+    string mypath = getScreenBacklightDevicePath();
 
     while(1) {
 
@@ -415,7 +419,7 @@ void startDaemon()
 	    } else if (lux < 1500) {
 		    percent = 70;
 	    }
-	    setScreenBacklight(percent);
+	    setScreenBacklight(percent, mymax, mypath);
         }
 
         sleep(3);

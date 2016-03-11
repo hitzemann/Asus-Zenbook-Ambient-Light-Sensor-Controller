@@ -7,6 +7,7 @@ Tested with:
    * Linux 4.4.1
    * Linux 4.4.2
    * Linux 4.4.3
+   * Linux 4.4.5
 
 How to install
 --------------

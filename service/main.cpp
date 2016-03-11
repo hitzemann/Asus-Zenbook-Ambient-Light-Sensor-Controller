@@ -53,7 +53,6 @@ pthread_cond_t start = PTHREAD_COND_INITIALIZER;
 /** Signal mask */
 static sigset_t g_sigset;
 
-
 void *sigManager(void *arg) {
   int signum;
 
@@ -160,11 +159,9 @@ int getScreenBacklightCur()
 }
 
 void setScreenBacklight(int percent, int max, string path) {
-    int ret = 0;
     int time = 200; // ms
     int fades = 25; // steps to use for fading
     char cmd[100];
-    //int maxScreenBacklight = getScreenBacklightMax(); // could be static if we are sure if it will not be changed at program lifetime
     int maxScreenBacklight = max; // could be static if we are sure if it will not be changed at program lifetime
     if (!maxScreenBacklight) {
         syslog(LOG_ERR, "Failed to get max screen backlight.");
@@ -175,15 +172,12 @@ void setScreenBacklight(int percent, int max, string path) {
     int step = (newScreenBacklight - curScreenBacklight) / fades;
     int val = curScreenBacklight;
 
-    //string path = getScreenBacklightDevicePath() + "brightness";
     string fullpath = path + "brightness";
     for (int i=0; i<fades; i++) {
 	val += step;
-        snprintf(cmd, sizeof(cmd), "echo %d | tee %s", val, fullpath.c_str());
-        ret = system(cmd);
-        if (ret < 0) {
-            syslog(LOG_ERR, "Failed to set screen backlight.");
-        }
+	char valstr[16];
+	sprintf (valstr, "%d", val);
+	writeAttribute(fullpath, valstr);
 	usleep(time*1000/fades);
     }
 }

@@ -353,27 +353,6 @@ void startDaemon()
         if(getLidStatus() == 0) {
             setKeyboardBacklight(0);
         } else {
-		/*
-            float als = getAmbientLightPercent();
-            //printf("Illuminance percent: %f\n", als);
-
-            if(als <= 10) {
-                setScreenBacklight(40);
-                setKeyboardBacklight(100);
-            } else if(als <= 25) {
-                setScreenBacklight(60);
-                setKeyboardBacklight(0);
-            } else if(als <= 50) {
-                setScreenBacklight(75);
-                setKeyboardBacklight(0);
-            } else if(als <= 75) {
-                setScreenBacklight(90);
-                setKeyboardBacklight(0);
-            } else if(als <= 100) {
-                setScreenBacklight(100);
-                setKeyboardBacklight(0);
-            }
-	    */
             // [root@hisi ~]# echo "\_SB.ALS._ALR" > /proc/acpi/call
             // [root@hisi ~]# cat /proc/acpi/call
             // [[0x14, 0x0], [0x14, 0x19], [0x28, 0x32], [0x32, 0x64], [0x41, 0x96], [0x50, 0xc8], [0x64, 0x12c], [0x7d, 0x190], [0x9b, 0x1f4], [0xc3, 0x258], [0xf0, 0x2bc], [0x127, 0x320], [0x168, 0x384], [0x1b8, 0x3e8], [0x217, 0x4e2], [0x294, 0x5dc]]
